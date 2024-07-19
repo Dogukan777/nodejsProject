@@ -33,7 +33,7 @@ router.post('/signup', async function(req, res) {
 
   // userType = user | company
 
-  if (!email && !password) {
+  if (!email && !password ) {
     return res.status(400).send({
       message: 'email or password missing',
     });
@@ -62,24 +62,29 @@ router.post('/signup', async function(req, res) {
 /*---------------------------------------------------------------------- */
 router.post('/login', async function(req, res) {
   const { email, password } = req.body;
-
-  if (!email || !password) {
+  /*if (!email || !password) {
     return res.status(400).send({
-      message: 'email or password is missing'
+      isLogin: false,
+      message: 'email or password is missing',
+      
     })
-  };
+  };*/
 
   const user = await db('users').select('*').where('email', email).first();
 
   if (!user) {
     return res.status(400).send({
+      isLogin: false,
       message: 'There is no account with given email'
     })
   };
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    return res.status.send('email or password is wrong')
+    return res.status(400).send({
+      isLogin: false,
+      message: 'Password is wrong'
+    })
   }
 
   const token = jwt.sign({ email: email, userId: user.id }, process.env.SECRET_KEY);
@@ -87,12 +92,13 @@ router.post('/login', async function(req, res) {
   localStorage.setItem('myKey', user.id);
 
   return res.status(200).send({
+    isLogin: true,
     message: 'successfully logged in',
     token
   });
 })
 /* -------------------------------------------------- */
-router.post('/delete/:id',async function(req, res) {
+router.post('/delete',async function(req, res) {
 
   const parameterId = req.query.id;
   if(!parameterId){
