@@ -92,6 +92,7 @@ router.post('/login', async function(req, res) {
   localStorage.setItem('myKey', user.id);
 
   return res.status(200).send({
+    userid:user.id,
     isLogin: true,
     message: 'successfully logged in',
     token

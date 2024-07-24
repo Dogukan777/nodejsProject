@@ -5,7 +5,7 @@ const verifyAuth = require('./auth');
 const jwt = require('jsonwebtoken');
 var router = express.Router();
 
-router.get('/list', verifyAuth, async function(req, res, next) {
+router.get('/list', async function(req, res, next) {
     const parameterId = req.query.id;
     const parameterName = req.query.name;
     const searchName = parameterName +'%';
@@ -22,30 +22,35 @@ router.get('/list', verifyAuth, async function(req, res, next) {
 });
 
 
-router.post('/add', verifyAuth, async function (req,res){
-  /* http://localhost:3001/users/productAdd */
-  const { name,price } = req.body;
+router.post('/add', async function (req,res){
+  try{
+       /* http://localhost:3001/users/productAdd */
+    const { name,price } = req.body;
 
-  if (!name && !price ) {}
+    if (!name && !price ) {}
 
-  //const date = new Date().toISOString();
+    const date = new Date().toISOString().split('T')[0];
 
-  // default => now()
+    // default => now()
 
-  await db('products').insert(
-    { name,price }
-  )
+    await db('products').insert(
+      { name,price,date }
+    )
 
-  return res.status(201).send({
-    message: 'product added successfully',
-  })
+    return res.status(201).send({
+      message: 'product added successfully',
+    })
+  }catch(e){
+    console.log("Err",e);
+  }
+ 
 })
 
 
 router.post('/update', async function(req,res){
   /* http://localhost:3001/users/productUpdate?id=3 */
   const parameterId = req.query.id; // parametreli
-  const { name,price,date } = req.body;
+  const { name,price } = req.body;
   console.log('parameter', parameterId);
   if(!parameterId){
     return res.status(400).send({
@@ -56,7 +61,7 @@ router.post('/update', async function(req,res){
   try{
     const product = await db('products')
       .where('id',parameterId) // veya başka bir koşul, örneğin 'where({ name })'
-      .update({ name, price, date });
+      .update({ name, price });
     if(product){
       return res.status(200).send({
         message: 'The product succesfully update'
